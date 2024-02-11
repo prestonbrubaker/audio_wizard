@@ -59,5 +59,5 @@ def process_folder(input_folder, output_folder):
 
 # Example usage
 input_folder = "grayscale"
-output_folder = "grayscale mp3"
+output_folder = "gray mp3"
 process_folder(input_folder, output_folder)
