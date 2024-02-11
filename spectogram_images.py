@@ -6,9 +6,13 @@ import numpy as np
 
 def create_mel_spectrogram(file_path, sample_rate):
     """
-    Converts an audio file to a Mel Spectrogram on a decibel scale.
+    Converts an audio file to a Mel Spectrogram on a decibel scale,
+    averaging channels if the audio is stereo.
     """
     waveform, _ = torchaudio.load(file_path)
+    # Check if the audio is stereo (2 channels) and average to mono if necessary
+    if waveform.size(0) > 1:  # More than one channel
+        waveform = waveform.mean(dim=0, keepdim=True)  # Average channels
     mel_spectrogram_transform = transforms.MelSpectrogram(sample_rate, n_fft=2048, hop_length=512, n_mels=128)
     mel_spectrogram = mel_spectrogram_transform(waveform)
     db_transform = transforms.AmplitudeToDB()
