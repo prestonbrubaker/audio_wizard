@@ -1,10 +1,10 @@
 import os
 import numpy as np
 import librosa
-import imageio
+import imageio.v2 as imageio  # Updated import statement
 from scipy.io.wavfile import write
 
-def image_to_audio(image_path, save_path, sr=22050, n_fft=2048, hop_length=512, n_mels=128):
+def image_to_audio(image_path, save_path, sr=22050, n_fft=2048, hop_length=512):
     """
     Convert a grayscale spectrogram image back into an audio file (WAV format).
     
@@ -14,13 +14,12 @@ def image_to_audio(image_path, save_path, sr=22050, n_fft=2048, hop_length=512, 
     - sr: Sampling rate for audio processing.
     - n_fft: FFT window size.
     - hop_length: Number of samples between successive frames.
-    - n_mels: Number of Mel bands.
     """
     # Load the grayscale image
     img = imageio.imread(image_path)
     
     # Normalize the image data to [0, 1] range
-    img_normalized = img / 255.0
+    img_normalized = img.astype(np.float32) / 255.0
     
     # Convert normalized image data to decibel scale
     S_DB = img_normalized * -80.0 + 80.0  # Assuming -80 dB as the minimum value
@@ -29,7 +28,7 @@ def image_to_audio(image_path, save_path, sr=22050, n_fft=2048, hop_length=512, 
     S_power = librosa.db_to_power(S_DB)
     
     # Inverse mel spectrogram to audio
-    y = librosa.feature.inverse.mel_to_audio(S_power, sr=sr, n_fft=n_fft, hop_length=hop_length, n_mels=n_mels)
+    y = librosa.feature.inverse.mel_to_audio(S_power, sr=sr, n_fft=n_fft, hop_length=hop_length)
     
     # Save the audio to a WAV file
     wav_path = save_path.replace('.mp3', '.wav')  # Temporary WAV file for intermediate saving
@@ -63,5 +62,5 @@ def process_folder(input_folder, output_folder):
 
 # Example usage
 input_folder = "grayscale"
-output_folder = "grayscale_mp3"
+output_folder = "grayscale mp3"
 process_folder(input_folder, output_folder)
