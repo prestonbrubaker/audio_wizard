@@ -4,6 +4,7 @@ import torch
 from torch import nn
 from torchaudio.transforms import MelSpectrogram
 import glob
+import os
 
 
 
@@ -87,6 +88,9 @@ actual_input_shape = 128*44  # This needs to be adjusted based on your Mel spect
 model = AudioAutoencoder(input_shape=actual_input_shape)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 criterion = nn.MSELoss()
+
+
+num_epochs = 10
 
 # Training loop
 for epoch in range(num_epochs):
