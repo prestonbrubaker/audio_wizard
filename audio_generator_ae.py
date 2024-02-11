@@ -54,7 +54,8 @@ class AudioProcessor:
         mel_spec_processor = MelSpectrogram(sample_rate, n_mels=self.n_mels)
         mel_spectrogram = mel_spec_processor(waveform)
         normalized_mel = normalize(mel_spectrogram)
-        return normalized_mel.view(-1)  # Flatten the Mel spectrogram for model input
+        # Use .reshape() instead of .view() for compatibility
+        return normalized_mel.reshape(-1)
 
     def generate_audio(self, input_tensor):
         with torch.no_grad():
