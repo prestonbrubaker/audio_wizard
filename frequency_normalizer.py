@@ -3,7 +3,7 @@ import glob
 import os
 
 # Set the path to your MP3 files folder
-folder_path = 'path/to/your/mp3/folder'
+folder_path = 'flat_data'
 
 # Iterate over all MP3 files in the folder
 for mp3_file in glob.glob(os.path.join(folder_path, '*.mp3')):
