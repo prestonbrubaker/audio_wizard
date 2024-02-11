@@ -20,7 +20,7 @@ def mp3_to_mel_spectrogram(mp3_path, save_path, sr=22050, n_fft=2048, hop_length
     y, sr = librosa.load(mp3_path, sr=sr, mono=True)
     
     # Compute the mel spectrogram
-    S = librosa.feature.melspectrogram(y, sr=sr, n_fft=n_fft, hop_length=hop_length, n_mels=n_mels)
+    S = librosa.feature.melspectrogram(y=y, sr=sr, n_fft=n_fft, hop_length=hop_length, n_mels=n_mels)
     
     # Convert to decibel scale for visual representation
     S_DB = librosa.power_to_db(S, ref=np.max)
