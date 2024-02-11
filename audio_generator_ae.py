@@ -75,6 +75,7 @@ os.makedirs(generated_audio_folder, exist_ok=True)
 n_mels = 128
 time_steps = 427
 actual_input_shape = n_mels * time_steps  # Adjust according to your Mel spectrogram size
+actual_input_shape = 564736
 audio_processor = AudioProcessor(model_path, actual_input_shape)
 
 # Process and generate audio for files in raw_data
