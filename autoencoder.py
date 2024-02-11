@@ -45,9 +45,12 @@ class AudioAutoencoder(nn.Module):
 
 def load_mp3(filename, segment_length=10):
     waveform, sample_rate = torchaudio.load(filename)
-    num_frames = segment_length * sample_rate  # 10 seconds * sample_rate frames/second
+    # Convert stereo to mono by averaging the two channels
+    if waveform.size(0) > 1:  # Check if audio is stereo
+        waveform = waveform.mean(dim=0, keepdim=True)
+    num_frames = segment_length * sample_rate
     if waveform.size(1) > num_frames:
-        waveform = waveform[:, :num_frames]  # Take the first 'num_frames' frames
+        waveform = waveform[:, :num_frames]
     return waveform, sample_rate
 
 
