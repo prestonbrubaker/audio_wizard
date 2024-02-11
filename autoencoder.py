@@ -123,8 +123,8 @@ for epoch in range(num_epochs):
         loss.backward()
         optimizer.step()
         print(f'    Epoch {epoch+1}, Loss: {loss.item()}')
-        torch.save(model.state_dict(), "autoencoder.pth")
-        print("Model Saved")
+        #torch.save(model.state_dict(), "autoencoder.pth")
+        #print("Model Saved")
     print(f'Epoch {epoch+1}, Loss: {loss.item()}')
 
 # Save the trained model
