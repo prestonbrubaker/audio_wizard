@@ -1,54 +1,51 @@
 import os
 import numpy as np
 import librosa
-import imageio.v2 as imageio  # Corrected for deprecation warning
+import imageio.v2 as imageio
 from scipy.io.wavfile import write
 
-def image_to_audio(image_path, save_path, sr=22050, n_fft=2048, hop_length=512):
+def image_to_audio(image_path, save_path, sr=22050, n_fft=2048, hop_length=512, n_mels=128, dynamic_range=80):
     """
     Convert a grayscale spectrogram image back into an audio file.
-    
+
     Args:
     - image_path: Path to the input grayscale spectrogram image.
     - save_path: Path to save the output audio file.
-    - sr: Sampling rate for audio processing.
-    - n_fft: FFT window size.
-    - hop_length: Number of samples between successive frames.
+    - sr, n_fft, hop_length, n_mels: Audio and spectrogram parameters.
+    - dynamic_range: The dynamic range of the spectrogram in decibels.
     """
     # Load the grayscale image
     img = imageio.imread(image_path)
 
     # Normalize the image data to [0, 1] range
-    img_normalized = img.astype(np.float32) / img.max()
+    img_normalized = img.astype(np.float32) / 255.0
 
-    # Assume the dynamic range is mapped to [0, 1] in the grayscale image
-    # Convert normalized image data to decibel scale
-    S_DB = img_normalized * -80.0 + 80.0  # Assuming -80 dB as the min value
+    # Map normalized image data to decibel scale
+    S_DB = img_normalized * dynamic_range - dynamic_range  # Mapping [0, 1] -> [-80 dB, 0 dB]
 
     # Convert decibel scale to power
     S_power = librosa.db_to_power(S_DB)
 
-    # Invert the mel spectrogram to audio using Griffin-Lim algorithm
+    # Invert the mel spectrogram to audio
+    # Note: librosa's mel_to_audio might not need n_mels explicitly, it's determined from S_power shape
     y = librosa.feature.inverse.mel_to_audio(S_power, sr=sr, n_fft=n_fft, hop_length=hop_length, win_length=n_fft)
 
-    # Save the audio to a WAV file first
+    # Save the audio to a WAV file first (Librosa works with floats, but scipy.io.wavfile expects int16 format)
     wav_path = save_path.replace('.mp3', '.wav')
-    write(wav_path, sr, y.astype(np.float32))
+    write(wav_path, sr, (y * 32767).astype(np.int16))
 
     # Convert WAV to MP3 using ffmpeg
-    os.system(f"ffmpeg -i \"{wav_path}\" -codec:a libmp3lame -qscale:a 2 \"{save_path}\"")
+    os.system(f'ffmpeg -i "{wav_path}" -codec:a libmp3lame -qscale:a 2 "{save_path}"')
 
     # Optionally, remove the WAV file after conversion
     os.remove(wav_path)
 
 def process_folder(input_folder, output_folder):
     """
-    Process all grayscale spectrogram images in a folder, converting them back into MP3 audio files.
+    Convert all grayscale spectrogram images in a folder back into MP3 audio files.
     """
-    # Ensure output folder exists, create if it doesn't
     os.makedirs(output_folder, exist_ok=True)
 
-    # Process each file in the input folder
     for filename in os.listdir(input_folder):
         if filename.endswith(".png"):
             image_path = os.path.join(input_folder, filename)
@@ -59,5 +56,5 @@ def process_folder(input_folder, output_folder):
 
 # Example usage
 input_folder = "grayscale"
-output_folder = "gray mp3"
+output_folder = "grayscale mp3"
 process_folder(input_folder, output_folder)
