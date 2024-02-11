@@ -54,9 +54,11 @@ def load_mp3(filename, segment_length=10):
 
 
 
-def to_mel_spectrogram(waveform, sample_rate, n_mels=128):
-    mel_spectrogram = MelSpectrogram(sample_rate, n_mels=n_mels)(waveform)
+def to_mel_spectrogram(waveform, sample_rate, n_mels=128, n_fft=2048):  # Adjust n_fft as needed
+    mel_spectrogram = MelSpectrogram(sample_rate, n_mels=n_mels, n_fft=n_fft)(waveform)
     return mel_spectrogram
+
+
 def normalize(tensor):
     tensor_minusmean = tensor - tensor.mean()
     return tensor_minusmean / tensor.abs().max()
