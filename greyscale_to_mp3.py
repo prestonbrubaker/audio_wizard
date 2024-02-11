@@ -4,8 +4,6 @@ import librosa
 import soundfile as sf
 import os
 from pydub import AudioSegment
-from pydub.playback import play
-import time
 
 def spectrogram_to_audio(input_image_path, output_audio_path, sr=22050, n_iter=32, hop_length=256):
     print(f"Processing {input_image_path}...")
@@ -42,19 +40,7 @@ def spectrogram_to_audio(input_image_path, output_audio_path, sr=22050, n_iter=3
     wav_path = output_audio_path.rsplit(".", 1)[0] + ".wav"
     sf.write(wav_path, y_resampled, target_sr)
     print(f"Saved WAV to {wav_path}")
-    # After saving the WAV file with soundfile
-    wav_path = output_audio_path.rsplit(".", 1)[0] + ".wav"
-    sf.write(wav_path, y_reconstructed, sr)
-    time.sleep(.1)  # Wait a second before proceeding
-    
-    # Use pydub to load, speed up, and export the audio
-    audio = AudioSegment.from_wav(wav_path)
-    audio_fast = audio.speedup(playback_speed=3.3)
-    audio_fast.export(output_audio_path, format="mp3")
-    print(f"Audio sped up by 3.3x and saved as MP3 to {output_audio_path}")
-    
-    # Optionally, remove the temporary WAV file
-    os.remove(wav_path)
+
     audio = AudioSegment.from_wav(wav_path)
     audio.export(output_audio_path, format="mp3")
     print(f"Converted and saved MP3 to {output_audio_path}")
