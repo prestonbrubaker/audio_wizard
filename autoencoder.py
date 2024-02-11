@@ -74,8 +74,8 @@ class AudioDataset(Dataset):
         waveform, sample_rate = load_mp3(self.file_paths[idx], self.segment_length)
         processed_data = to_mel_spectrogram(waveform, sample_rate)
         normalized_data = normalize(processed_data)
-        # Flatten the Mel spectrogram for the autoencoder
-        return normalized_data.view(-1)
+        # Flatten the Mel spectrogram for the autoencoder using .reshape instead of .view
+        return normalized_data.reshape(-1)  # Changed from .view(-1) to .reshape(-1)
 
 
 
