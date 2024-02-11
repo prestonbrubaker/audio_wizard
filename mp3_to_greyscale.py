@@ -3,6 +3,7 @@ import librosa
 import librosa.display
 import matplotlib.pyplot as plt
 from pydub import AudioSegment
+import numpy as np
 
 def mp3_to_spectrogram(input_folder, output_folder):
     for filename in os.listdir(input_folder):
