@@ -30,7 +30,7 @@ class AudioProcessor:
 model_path = 'autoencoder.pth'
 raw_data_folder = 'raw_data'
 generated_audio_folder = 'generated_audio'
-input_shape = 128*44  # This needs to be the same as used during training
+actual_input_shape = 128 * 427  # Adjusted based on Mel spectrogram size
 
 # Create the directory for generated audio if it doesn't exist
 os.makedirs(generated_audio_folder, exist_ok=True)
