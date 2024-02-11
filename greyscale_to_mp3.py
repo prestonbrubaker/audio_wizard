@@ -35,7 +35,15 @@ def spectrogram_to_audio(input_image_path, output_audio_path, sr=22050, n_iter=3
     y_reconstructed = librosa.istft(S_complex, hop_length=hop_length)
 
     # Save the reconstructed signal to a WAV file first
-    sf.write(output_audio_path, y_reconstructed, sr)
+    wav_path = output_audio_path.rsplit(".", 1)[0] + ".wav"  # Change the extension to .wav
+    sf.write(wav_path, y_reconstructed, sr)
+
+    # Convert the WAV file to MP3 using pydub
+    audio = AudioSegment.from_wav(wav_path)
+    audio.export(output_audio_path, format="mp3")
+
+    # Optionally, remove the temporary WAV file to save space
+    os.remove(wav_path)
     
 # Example usage
 input_folder = 'greyscales'
