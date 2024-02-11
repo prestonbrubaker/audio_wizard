@@ -5,7 +5,37 @@ from torchaudio.transforms import MelSpectrogram
 import os
 import glob
 
-# Assuming the AudioAutoencoder class definition is the same as before, ensure it's included here or imported if separated into modules
+class AudioAutoencoder(nn.Module):
+    def __init__(self, input_shape):
+        super(AudioAutoencoder, self).__init__()
+        
+        # Encoder
+        self.encoder = nn.Sequential(
+            nn.Linear(input_shape, 128),
+            nn.ReLU(True),
+            nn.Linear(128, 64),
+            nn.ReLU(True),
+            nn.Linear(64, 12),
+            nn.ReLU(True),
+            nn.Linear(12, 3)  # Latent representation
+        )
+        
+        # Decoder
+        self.decoder = nn.Sequential(
+            nn.Linear(3, 12),
+            nn.ReLU(True),
+            nn.Linear(12, 64),
+            nn.ReLU(True),
+            nn.Linear(64, 128),
+            nn.ReLU(True),
+            nn.Linear(128, input_shape),
+            nn.Tanh()  # Using Tanh to ensure the output range matches the normalized input range
+        )
+
+    def forward(self, x):
+        x = self.encoder(x)
+        x = self.decoder(x)
+        return x
 
 class AudioProcessor:
     def __init__(self, model_path, input_shape, n_mels=128):
