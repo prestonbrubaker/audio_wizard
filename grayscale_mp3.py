@@ -4,20 +4,19 @@ import librosa
 import imageio.v2 as imageio
 from scipy.io.wavfile import write
 
-def grayscale_image_to_audio(image_path, output_audio_path, sr=22050, n_fft=2048, hop_length=512, n_mels=128):
+def grayscale_image_to_audio(image_path, output_audio_path, sr=22050, n_fft=2048, hop_length=512):
     # Load the grayscale spectrogram image
     img = imageio.imread(image_path)
     img_normalized = img.astype(np.float32) / 255.0  # Normalize pixel values to [0, 1]
 
     # Map pixel values back to decibels
-    # Assuming the dynamic range is -80 dB to 0 dB
-    S_DB = img_normalized * 80.0 - 80.0  # Inverse operation of librosa.power_to_db
+    S_DB = img_normalized * 80.0 - 80.0  # Assuming -80 dB to 0 dB dynamic range
 
     # Convert decibels back to power
     S_power = librosa.db_to_power(S_DB)
 
     # Invert the mel spectrogram back to audio
-    y = librosa.feature.inverse.mel_to_audio(S_power, sr=sr, n_fft=n_fft, hop_length=hop_length, n_mels=n_mels)
+    y = librosa.feature.inverse.mel_to_audio(S_power, sr=sr, n_fft=n_fft, hop_length=hop_length)
 
     # Save the inverted audio to a WAV file
     wav_output_path = output_audio_path.replace('.mp3', '.wav')
