@@ -55,7 +55,7 @@ criterion = nn.MSELoss()
 optimizer = torch.optim.Adam(autoencoder.parameters(), lr=1e-3)
 
 # Path to the directory containing MP3 files
-directory_path = 'path/to/your/directory'
+directory_path = 'raw_data'
 
 # Iterate over all MP3 files in the directory
 for filename in os.listdir(directory_path):
