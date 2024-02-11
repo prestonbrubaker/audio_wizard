@@ -37,6 +37,11 @@ class AudioAutoencoder(nn.Module):
         x = self.decoder(x)
         return x
 
+
+def normalize(tensor):
+    # Scale the tensor to have values between -1 and 1
+    return (tensor - tensor.min()) / (tensor.max() - tensor.min()) * 2 - 1
+
 class AudioProcessor:
     def __init__(self, model_path, input_shape, n_mels=128):
         self.model = AudioAutoencoder(input_shape)
