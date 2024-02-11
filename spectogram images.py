@@ -42,6 +42,6 @@ def process_folder(input_folder, output_folder):
             print(f"Processed and saved: {output_file_path}")
 
 # Example usage
-input_folder = 'audiophiles'  # Update this path
+input_folder = 'raw_data'  # Update this path
 output_folder = 'mel_spectograms'  # Update this path
 process_folder(input_folder, output_folder)
