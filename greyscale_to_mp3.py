@@ -5,30 +5,29 @@ import soundfile as sf
 import os
 from pydub import AudioSegment
 
-def spectrogram_to_audio(input_image_path, output_audio_path, sr=22050, n_iter=32, hop_length=256, db_range=80):
-    # Load the spectrogram image
+def spectrogram_to_audio(input_image_path, output_audio_path, sr=22050, n_iter=32, hop_length=512):
     img = plt.imread(input_image_path)
-    if img.ndim == 3:  # Convert RGB to grayscale if necessary
+    if img.ndim == 3:  
         img = np.mean(img, axis=2)
-    # Normalize image values to [0, 1] if not already
     img = img / np.max(img)
-    
-    # Reverse the dB scale conversion
-    img_db = img * db_range - db_range  # Assuming the min dB value was -db_range
-    S_mag = librosa.db_to_power(img_db)  # Convert dB back to magnitude
 
-    # Initialize with a random phase
+    # Assuming the image represents a log-mel spectrogram, reverse the conversion
+    img_db = img * 80 - 80  
+    S_mag = librosa.db_to_power(img_db)
+
+    # We skip direct frequency bin adjustment and focus on adjusting dimensions for ISTFT
+    n_fft = 2048  # Adjust based on the expected frequency resolution and STFT assumptions
+
+    # Initialize with a random phase for Griffin-Lim
     phase = np.exp(2j * np.pi * np.random.rand(*S_mag.shape))
     S_complex = S_mag * phase
 
-    # Griffin-Lim algorithm
     for _ in range(n_iter):
-        audio = librosa.istft(S_complex, hop_length=hop_length)
-        _, phase = librosa.magphase(librosa.stft(audio, n_fft=(S_mag.shape[0]*2)-1, hop_length=hop_length))
+        audio = librosa.istft(S_complex, hop_length=hop_length, win_length=n_fft)
+        _, phase = librosa.magphase(librosa.stft(audio, n_fft=n_fft, hop_length=hop_length))
         S_complex = S_mag * phase
 
-    # Inverse STFT to get time-domain signal
-    y = librosa.istft(S_complex, hop_length=hop_length)
+    y = librosa.istft(S_complex, hop_length=hop_length, win_length=n_fft)
 
     # Save to WAV and then convert to MP3
     wav_path = output_audio_path.rsplit(".", 1)[0] + ".wav"
