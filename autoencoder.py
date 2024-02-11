@@ -2,6 +2,8 @@ import torchaudio
 from torch.utils.data import Dataset, DataLoader
 import torch
 from torch import nn
+from torchaudio.transforms import MelSpectrogram
+import glob
 
 
 
@@ -40,15 +42,16 @@ class AudioAutoencoder(nn.Module):
 
 
 
-
-
-
-
-
-def load_mp3(filename):
+def load_mp3(filename, segment_length=10):
     waveform, sample_rate = torchaudio.load(filename)
+    num_frames = segment_length * sample_rate  # 10 seconds * sample_rate frames/second
+    if waveform.size(1) > num_frames:
+        waveform = waveform[:, :num_frames]  # Take the first 'num_frames' frames
     return waveform, sample_rate
-from torchaudio.transforms import MelSpectrogram
+
+
+
+
 
 def to_mel_spectrogram(waveform, sample_rate, n_mels=128):
     mel_spectrogram = MelSpectrogram(sample_rate, n_mels=n_mels)(waveform)
@@ -59,31 +62,44 @@ def normalize(tensor):
 
 
 class AudioDataset(Dataset):
-    def __init__(self, file_paths):
-        self.file_paths = file_paths
+    def __init__(self, root_dir, segment_length=10):
+        self.file_paths = glob.glob(os.path.join(root_dir, '*.mp3'))
+        self.segment_length = segment_length
 
     def __len__(self):
         return len(self.file_paths)
 
     def __getitem__(self, idx):
-        waveform, sample_rate = load_mp3(self.file_paths[idx])
-        # Choose preprocessing method: to_spectrogram or to_mel_spectrogram
+        waveform, sample_rate = load_mp3(self.file_paths[idx], self.segment_length)
         processed_data = to_mel_spectrogram(waveform, sample_rate)
         normalized_data = normalize(processed_data)
-        return normalized_data
+        # Flatten the Mel spectrogram for the autoencoder
+        return normalized_data.view(-1)
 
-dataset = AudioDataset(['path/to/your/mp3file1.mp3', 'path/to/your/mp3file2.mp3'])
+
+
+# Assuming 'raw_data' folder is in the current directory
+dataset = AudioDataset('raw_data')
 dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
 
+# Model, Optimizer, and Criterion initialization (example)
+actual_input_shape = 128*44  # This needs to be adjusted based on your Mel spectrogram size
+model = AudioAutoencoder(input_shape=actual_input_shape)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+criterion = nn.MSELoss()
 
+# Training loop
 for epoch in range(num_epochs):
     for batch in dataloader:
         optimizer.zero_grad()
-        outputs = model(batch)
+        outputs = model(batch.float())  # Ensure the batch is in the correct dtype
         loss = criterion(outputs, batch)
         loss.backward()
         optimizer.step()
     print(f'Epoch {epoch+1}, Loss: {loss.item()}')
 
+# Save the trained model
+torch.save(model.state_dict(), "autoencoder.pth")
+print("Model Saved")
 
 
