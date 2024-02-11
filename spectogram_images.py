@@ -33,7 +33,12 @@ def save_spectrogram_to_png(spectrogram, output_file_path):
 def process_folder(input_folder, output_folder):
     """
     Processes all MP3 files in the input folder, converting them to Mel Spectrograms and saving as PNG images.
+    Ensures the output folder exists before proceeding.
     """
+    # Ensure the output directory exists
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)  # Create the directory if it doesn't exist
+
     for filename in os.listdir(input_folder):
         if filename.endswith(".mp3"):
             file_path = os.path.join(input_folder, filename)
