@@ -25,16 +25,14 @@ def mp3_to_spectrogram(input_folder, output_folder):
             # Create a figure without any axes
             plt.figure(figsize=(10, 4))
             librosa.display.specshow(S_dB, sr=sample_rate, cmap='gray_r', fmax=8000)
-
+            
             # Remove axes and legends
             plt.axis('off')
-
-            # Ensure the figure is tight and no extra whitespace/padding
             plt.tight_layout(pad=0)
             
             # Save the spectrogram as a grayscale PNG
             output_path = os.path.join(output_folder, os.path.splitext(filename)[0] + '.png')
-            plt.savefig(output_path, bbox_inches='tight', pad_inches=0, dpi=300, cmap='gray')
+            plt.savefig(output_path, bbox_inches='tight', pad_inches=0, dpi=300)
             plt.close()
 
 # Example usage
