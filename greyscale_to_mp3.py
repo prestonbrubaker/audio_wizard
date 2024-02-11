@@ -5,7 +5,7 @@ import soundfile as sf
 import os
 from pydub import AudioSegment
 
-def spectrogram_to_audio(input_image_path, output_audio_path, sr=22050, n_iter=32, hop_length=512):
+def spectrogram_to_audio(input_image_path, output_audio_path, sr=22050, n_iter=32, hop_length=256, db_range=80):
     img = plt.imread(input_image_path)
     if img.ndim == 3:  
         img = np.mean(img, axis=2)
