@@ -43,19 +43,17 @@ def normalize(tensor):
     return (tensor - tensor.min()) / (tensor.max() - tensor.min()) * 2 - 1
 
 class AudioProcessor:
-    def __init__(self, model_path, input_shape, n_mels=128):
+    def __init__(self, model_path, input_shape):
         self.model = AudioAutoencoder(input_shape)
         self.model.load_state_dict(torch.load(model_path))
         self.model.eval()  # Set the model to evaluation mode
-        self.n_mels = n_mels
 
     def process_audio(self, file_path):
         waveform, sample_rate = torchaudio.load(file_path)
-        mel_spec_processor = MelSpectrogram(sample_rate, n_mels=self.n_mels)
+        mel_spec_processor = MelSpectrogram(sample_rate)
         mel_spectrogram = mel_spec_processor(waveform)
         normalized_mel = normalize(mel_spectrogram)
-        # Use .reshape() instead of .view() for compatibility
-        return normalized_mel.reshape(-1)
+        return normalized_mel.view(1, -1)  # Add batch dimension
 
     def generate_audio(self, input_tensor):
         with torch.no_grad():
@@ -70,12 +68,11 @@ generated_audio_folder = 'generated_audio'
 # Create the directory for generated audio if it doesn't exist
 os.makedirs(generated_audio_folder, exist_ok=True)
 
-# Corrected: Use actual_input_shape instead of input_shape
 # Assuming the Mel spectrogram size is (n_mels, time_steps)
 n_mels = 128
 time_steps = 427
 actual_input_shape = n_mels * time_steps  # Adjust according to your Mel spectrogram size
-actual_input_shape = 564736
+
 audio_processor = AudioProcessor(model_path, actual_input_shape)
 
 # Process and generate audio for files in raw_data
@@ -83,12 +80,11 @@ for file_path in glob.glob(os.path.join(raw_data_folder, '*.mp3'))[:10]:  # Limi
     normalized_mel = audio_processor.process_audio(file_path)
     print("Shape of normalized_mel:", normalized_mel.shape)  # Add this line
     # Assuming the model expects a batch dimension, and single sample needs to be unsqueezed
-    generated_audio = audio_processor.generate_audio(normalized_mel.unsqueeze(0))
-    print("Shape before passing to the decoder:", generated_audio.shape)  # Add this line
+    generated_audio = audio_processor.generate_audio(normalized_mel)
+    print("Shape of generated_audio:", generated_audio.shape)  # Add this line
     # Placeholder for saving generated audio
     output_path = os.path.join(generated_audio_folder, os.path.basename(file_path))
     # Implement actual saving method depending on the generated data's format
     # Example placeholder: torchaudio.save(output_path, generated_audio.squeeze(0), sample_rate)
 
-print("Processing and generation complete.")
 print("Processing and generation complete.")
