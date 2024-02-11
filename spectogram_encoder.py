@@ -35,5 +35,5 @@ def process_folder(input_folder, output_folder, file_extension=".mp3"):
 
 # Example usage
 input_folder = "flat_data"
-output_folder = "../spectrograms"
+output_folder = "spectrograms"
 process_folder(input_folder, output_folder)
