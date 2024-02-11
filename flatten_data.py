@@ -4,7 +4,7 @@ from pydub import AudioSegment
 # Define the directory containing your MP3 snippets
 source_directory = 'raw_data'
 # Define the directory to save the converted mono files
-mono_directory = os.path.join(source_directory, 'flattened_data')
+mono_directory = os.path.join(source_directory, '../flattened_data')
 
 # Create the mono directory if it doesn't exist
 os.makedirs(mono_directory, exist_ok=True)
