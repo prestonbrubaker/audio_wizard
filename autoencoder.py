@@ -113,7 +113,7 @@ print("Model training on: " + str(device))
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 criterion = nn.MSELoss()
 
-num_epochs = 10
+num_epochs = 1000
 
 # Training loop
 for epoch in range(num_epochs):
