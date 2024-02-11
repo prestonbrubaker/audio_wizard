@@ -41,6 +41,9 @@ def spectrogram_to_audio(input_image_path, output_audio_path, sr=22050, n_iter=3
 
     # Reconstruct audio from the magnitude and estimated phase
     y_reconstructed = librosa.istft(S_complex, hop_length=hop_length)
+    # Normalize the amplitude of the reconstructed audio
+    y_reconstructed = y_reconstructed / np.max(np.abs(y_reconstructed))
+
     # Before saving the WAV file, check the max amplitude
     max_amp = np.max(np.abs(y_reconstructed))
     print(f"Max amplitude of reconstructed audio: {max_amp}")
