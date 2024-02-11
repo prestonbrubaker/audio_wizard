@@ -53,9 +53,8 @@ class AudioProcessor:
         mel_spec_processor = MelSpectrogram(sample_rate)
         mel_spectrogram = mel_spec_processor(waveform)
         normalized_mel = normalize(mel_spectrogram)
-        return normalized_mel.reshape(1, -1)  # Add batch dimension using reshape
+        return normalized_mel.view(1, -1)  # Add batch dimension using view()
 
-    
     def generate_audio(self, input_tensor):
         with torch.no_grad():
             generated_audio = self.model(input_tensor)
