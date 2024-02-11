@@ -8,7 +8,6 @@ from torchaudio.transforms import MelSpectrogram
 
 
 
-
 class AudioAutoencoder(nn.Module):
     def __init__(self, input_shape):
         super(AudioAutoencoder, self).__init__()
@@ -108,10 +107,12 @@ dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
 # Correctly adjusted input shape for the autoencoder
 actual_input_shape = 128 * 427  # Adjusted based on Mel spectrogram size
 model = AudioAutoencoder(input_shape=actual_input_shape)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print("Model training on: " + str(device))
+optimizer = torch.optim.Adam(model.parameters(), lr=0.00001)
 criterion = nn.MSELoss()
 
-num_epochs = 10
+num_epochs = 1000
 
 # Training loop
 for epoch in range(num_epochs):
@@ -121,6 +122,9 @@ for epoch in range(num_epochs):
         loss = criterion(outputs, batch)
         loss.backward()
         optimizer.step()
+        print(f'    Epoch {epoch+1}, Loss: {loss.item()}')
+        #torch.save(model.state_dict(), "autoencoder.pth")
+        #print("Model Saved")
     print(f'Epoch {epoch+1}, Loss: {loss.item()}')
 
 # Save the trained model
