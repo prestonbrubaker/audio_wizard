@@ -89,6 +89,9 @@ model = AudioAutoencoder(input_shape=actual_input_shape)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 criterion = nn.MSELoss()
 
+
+num_epochs = 10
+
 # Training loop
 for epoch in range(num_epochs):
     for batch in dataloader:
