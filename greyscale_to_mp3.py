@@ -20,7 +20,7 @@ def spectrogram_to_audio(input_image_path, output_audio_path, sr=22050, n_iter=3
     phase = np.exp(2j * np.pi * np.random.rand(*S_mag.shape))
 
     # Initialize an empty complex spectrogram with the correct shape
-    S_complex = np.zeros(S_mag.shape, dtype=np.complex)
+    S_complex = np.zeros(S_mag.shape, dtype=complex)  # Updated to use 'complex'
 
     # Griffin-Lim algorithm to estimate phase
     for i in range(n_iter):
@@ -36,7 +36,7 @@ def spectrogram_to_audio(input_image_path, output_audio_path, sr=22050, n_iter=3
 
     # Save the reconstructed signal to a WAV file first
     sf.write(output_audio_path, y_reconstructed, sr)
-
+    
 # Example usage
 input_folder = 'greyscales'
 output_folder = 'reconstructed_mp3s'
