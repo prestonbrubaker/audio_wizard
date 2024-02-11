@@ -6,7 +6,6 @@ import torch
 from torch import nn
 from torchaudio.transforms import MelSpectrogram
 
-torch.cuda.empty_cache()
 
 
 class AudioAutoencoder(nn.Module):
@@ -110,7 +109,7 @@ actual_input_shape = 128 * 427  # Adjusted based on Mel spectrogram size
 model = AudioAutoencoder(input_shape=actual_input_shape)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Model training on: " + str(device))
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 criterion = nn.MSELoss()
 
 num_epochs = 1000
