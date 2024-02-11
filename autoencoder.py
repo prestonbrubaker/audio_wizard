@@ -54,9 +54,11 @@ def load_mp3(filename, segment_length=10):
 
 
 
-def to_mel_spectrogram(waveform, sample_rate, n_mels=128):
-    mel_spectrogram = MelSpectrogram(sample_rate, n_mels=n_mels)(waveform)
+def to_mel_spectrogram(waveform, sample_rate, n_mels=128, n_fft=2048):  # Adjust n_fft as needed
+    mel_spectrogram = MelSpectrogram(sample_rate, n_mels=n_mels, n_fft=n_fft)(waveform)
     return mel_spectrogram
+
+
 def normalize(tensor):
     tensor_minusmean = tensor - tensor.mean()
     return tensor_minusmean / tensor.abs().max()
@@ -74,8 +76,21 @@ class AudioDataset(Dataset):
         waveform, sample_rate = load_mp3(self.file_paths[idx], self.segment_length)
         processed_data = to_mel_spectrogram(waveform, sample_rate)
         normalized_data = normalize(processed_data)
-        # Flatten the Mel spectrogram for the autoencoder
-        return normalized_data.view(-1)
+        
+        # Target shape, assuming `time_steps` is the uniform time dimension size you decide
+        target_shape = (normalized_data.size(0), normalized_data.size(1), time_steps)
+        
+        # Initialize a tensor of zeros with the target shape
+        padded_data = torch.zeros(target_shape)
+        
+        # Calculate the number of columns to copy from `normalized_data`
+        columns_to_copy = min(normalized_data.size(2), time_steps)
+        
+        # Copy data from `normalized_data` to `padded_data`
+        padded_data[:, :, :columns_to_copy] = normalized_data[:, :, :columns_to_copy]
+        
+        # Flatten the padded Mel spectrogram for the autoencoder
+        return padded_data.reshape(-1)
 
 
 
