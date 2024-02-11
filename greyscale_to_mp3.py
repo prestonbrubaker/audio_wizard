@@ -47,7 +47,7 @@ def spectrogram_to_audio(input_image_path, output_audio_path, sr=22050, n_iter=3
     
 # Example usage
 input_folder = 'greyscales'
-output_folder = 'reconstructed_mp3s'
+output_folder = 'test_gen_mp3s'
 for filename in os.listdir(input_folder):
     if filename.endswith(".png"):
         input_image_path = os.path.join(input_folder, filename)
