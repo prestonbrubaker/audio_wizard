@@ -6,11 +6,6 @@ from torch import nn
 
 
 
-
-
-
-
-
 class AudioAutoencoder(nn.Module):
     def __init__(self, input_shape):
         super(AudioAutoencoder, self).__init__()
