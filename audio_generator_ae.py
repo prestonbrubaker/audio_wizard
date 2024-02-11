@@ -80,11 +80,14 @@ audio_processor = AudioProcessor(model_path, actual_input_shape)
 # Process and generate audio for files in raw_data
 for file_path in glob.glob(os.path.join(raw_data_folder, '*.mp3'))[:10]:  # Limit to 10 files
     normalized_mel = audio_processor.process_audio(file_path)
+    print("Shape of normalized_mel:", normalized_mel.shape)  # Add this line
     # Assuming the model expects a batch dimension, and single sample needs to be unsqueezed
     generated_audio = audio_processor.generate_audio(normalized_mel.unsqueeze(0))
+    print("Shape before passing to the decoder:", generated_audio.shape)  # Add this line
     # Placeholder for saving generated audio
     output_path = os.path.join(generated_audio_folder, os.path.basename(file_path))
     # Implement actual saving method depending on the generated data's format
     # Example placeholder: torchaudio.save(output_path, generated_audio.squeeze(0), sample_rate)
 
+print("Processing and generation complete.")
 print("Processing and generation complete.")
