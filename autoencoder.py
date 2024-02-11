@@ -1,10 +1,10 @@
+import glob
+import os
 import torchaudio
 from torch.utils.data import Dataset, DataLoader
 import torch
 from torch import nn
 from torchaudio.transforms import MelSpectrogram
-import glob
-import os
 
 
 
@@ -68,32 +68,26 @@ class AudioDataset(Dataset):
     def __init__(self, root_dir, segment_length=10, n_mels=128, n_fft=2048, hop_length=512):
         self.file_paths = glob.glob(os.path.join(root_dir, '*.mp3'))
         self.segment_length = segment_length
-        self.time_steps = 427  # Set based on the calculation
-        self.n_mels = n_mels  # Number of Mel frequency bins
+        self.n_mels = n_mels
+        self.n_fft = n_fft
+        self.hop_length = hop_length
+        self.time_steps = 427  # Calculated based on the discussion
 
     def __len__(self):
         return len(self.file_paths)
 
     def __getitem__(self, idx):
         waveform, sample_rate = load_mp3(self.file_paths[idx], self.segment_length)
-        processed_data = to_mel_spectrogram(waveform, sample_rate, self.n_mels, n_fft)
+        processed_data = to_mel_spectrogram(waveform, sample_rate, self.n_mels, self.n_fft, self.hop_length)
         normalized_data = normalize(processed_data)
         
-        # Determine the size for padding/truncating
-        target_shape = (self.n_mels, self.time_steps)  # Use self.n_mels and self.time_steps
-        
-        # Initialize a tensor of zeros with the target shape
+        target_shape = (self.n_mels, self.time_steps)
         padded_data = torch.zeros(target_shape)
         
-        # Calculate the number of columns to copy from `normalized_data`
         columns_to_copy = min(normalized_data.size(2), self.time_steps)
-        
-        # Copy data from `normalized_data` to `padded_data`
         padded_data[:, :columns_to_copy] = normalized_data[:, :, :columns_to_copy]
         
-        # Flatten the padded Mel spectrogram for the autoencoder
         return padded_data.reshape(-1)
-
 
 
 
@@ -102,12 +96,11 @@ class AudioDataset(Dataset):
 dataset = AudioDataset('raw_data')
 dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
 
-# Model, Optimizer, and Criterion initialization (example)
-actual_input_shape = 128*44  # This needs to be adjusted based on your Mel spectrogram size
+# Correctly adjusted input shape for the autoencoder
+actual_input_shape = 128 * 427  # Adjusted based on Mel spectrogram size
 model = AudioAutoencoder(input_shape=actual_input_shape)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 criterion = nn.MSELoss()
-
 
 num_epochs = 10
 
@@ -124,5 +117,3 @@ for epoch in range(num_epochs):
 # Save the trained model
 torch.save(model.state_dict(), "autoencoder.pth")
 print("Model Saved")
-
-
