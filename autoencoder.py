@@ -54,8 +54,14 @@ def load_mp3(filename, segment_length=10):
 
 
 
-def to_mel_spectrogram(waveform, sample_rate, n_mels=128, n_fft=2048):  # Adjust n_fft as needed
-    mel_spectrogram = MelSpectrogram(sample_rate, n_mels=n_mels, n_fft=n_fft)(waveform)
+def to_mel_spectrogram(waveform, sample_rate, n_mels=128, n_fft=2048, hop_length=512):
+    mel_spectrogram = MelSpectrogram(
+        sample_rate=sample_rate,
+        n_fft=n_fft,
+        win_length=n_fft,
+        hop_length=hop_length,
+        n_mels=n_mels
+    )(waveform)
     return mel_spectrogram
 
 
