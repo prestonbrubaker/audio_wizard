@@ -121,7 +121,7 @@ for epoch in range(num_epochs):
         loss = criterion(outputs, batch)
         loss.backward()
         optimizer.step()
-        print(f'    Epoch {epoch+1}, Batch {batch}, Loss: {loss.item()}')
+        print(f'    Epoch {epoch+1}, Loss: {loss.item()}')
     print(f'Epoch {epoch+1}, Loss: {loss.item()}')
 
 # Save the trained model
