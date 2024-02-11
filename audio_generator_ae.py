@@ -35,17 +35,17 @@ actual_input_shape = 128 * 427  # Adjusted based on Mel spectrogram size
 # Create the directory for generated audio if it doesn't exist
 os.makedirs(generated_audio_folder, exist_ok=True)
 
-audio_processor = AudioProcessor(model_path, input_shape)
+# Corrected: Use actual_input_shape instead of input_shape
+audio_processor = AudioProcessor(model_path, actual_input_shape)
 
 # Process and generate audio for files in raw_data
 for file_path in glob.glob(os.path.join(raw_data_folder, '*.mp3'))[:10]:  # Limit to 10 files
     normalized_mel = audio_processor.process_audio(file_path)
     # Assuming the model expects a batch dimension, and single sample needs to be unsqueezed
     generated_audio = audio_processor.generate_audio(normalized_mel.unsqueeze(0))
-    # Save the generated audio - you might need additional processing depending on your model's output
-    # For example, if your model outputs a Mel spectrogram, you would need an inverse Mel transformation here
+    # Placeholder for saving generated audio
     output_path = os.path.join(generated_audio_folder, os.path.basename(file_path))
-    # Placeholder: Actual saving method depends on the generated data's format
-    # torchaudio.save(output_path, generated_audio, sample_rate)
+    # Implement actual saving method depending on the generated data's format
+    # Example placeholder: torchaudio.save(output_path, generated_audio.squeeze(0), sample_rate)
 
 print("Processing and generation complete.")
