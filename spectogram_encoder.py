@@ -1,40 +1,54 @@
-import os
 import librosa
 import librosa.display
-import matplotlib.pyplot as plt
 import numpy as np
-from pydub import AudioSegment
+import matplotlib.pyplot as plt
+import os
 
-def mp3_to_complex_spectrogram(input_folder, output_folder, sr=44100, n_fft=4096, hop_length=256):
-    for filename in os.listdir(input_folder):
-        if filename.endswith(".mp3"):
-            path = os.path.join(input_folder, filename)
-            audio = AudioSegment.from_mp3(path).set_channels(1)
-            samples = np.array(audio.get_array_of_samples())
-            
-            # Ensure consistent sampling rate
-            y = librosa.resample(np.array(samples, dtype=float), orig_sr=audio.frame_rate, target_sr=sr)
-            
-            # Ensure fixed duration
-            target_length = 10 * sr
-            y = librosa.util.fix_length(data=y, size=target_length)
-            
-            # Generate complex spectrogram
-            S = librosa.stft(y, n_fft=n_fft, hop_length=hop_length, window='hann', center=False)
-            
-            # Plot the magnitude spectrogram
-            S_mag = np.abs(S)
-            plt.figure(figsize=(20, 8))  # Larger figure size
-            librosa.display.specshow(librosa.amplitude_to_db(S_mag, ref=np.max), sr=sr, hop_length=hop_length, x_axis='time', y_axis='linear')
-            plt.axis('off')
-            plt.tight_layout(pad=0)
-            
-            output_path = os.path.join(output_folder, os.path.splitext(filename)[0] + '.png')
-            plt.savefig(output_path, bbox_inches='tight', pad_inches=0, dpi=300)
-            plt.close()
-            print(f"Processed {filename}: Output Path={output_path}")
+def encode_phase(phase_matrix):
+    # Normalize phase to [0, 1] for image representation
+    encoded_phase = (phase_matrix + np.pi) / (2 * np.pi)
+    return encoded_phase
+
+def create_combined_mel_spectrogram_image(file_path, output_folder, sr=44100, n_fft=2048, hop_length=512, n_mels=128):
+    # Load the audio file
+    y, sr = librosa.load(file_path, sr=sr)
+    # STFT
+    D = librosa.stft(y, n_fft=n_fft, hop_length=hop_length)
+    # Magnitude and phase
+    magnitude, phase = librosa.magphase(D)
+    # Mel spectrogram
+    mel_filter = librosa.filters.mel(sr=sr, n_fft=n_fft, n_mels=n_mels)
+    mel_magnitude = np.dot(mel_filter, np.abs(D)**2)
+    # Log scale magnitude for better visualization
+    log_mel_magnitude = librosa.power_to_db(mel_magnitude, ref=np.max)
+    # Encode phase
+    encoded_phase = encode_phase(np.angle(D))
+    # Combine encoded phase and magnitude in one image (stacked or side-by-side)
+    combined_image = np.vstack([log_mel_magnitude, encoded_phase])  # Example: vertical stack
+
+    # Plot
+    fig, ax = plt.subplots(nrows=2, figsize=(10, 8), sharex=True)
+    img1 = librosa.display.specshow(log_mel_magnitude, y_axis='mel', x_axis='time', ax=ax[0])
+    fig.colorbar(img1, ax=ax[0], format='%+2.0f dB')
+    ax[0].set(title='Mel Spectrogram (Magnitude)')
+    img2 = librosa.display.specshow(encoded_phase, cmap='hsv', y_axis='mel', x_axis='time', ax=ax[1])
+    fig.colorbar(img2, ax=ax[1])
+    ax[1].set(title='Encoded Phase')
+    plt.tight_layout()
+
+    # Save as image
+    output_filename = os.path.splitext(os.path.basename(file_path))[0] + '_combined.png'
+    plt.savefig(os.path.join(output_folder, output_filename))
+    plt.close()
+
+def process_audio_files(folder_path, output_folder):
+    for file in os.listdir(folder_path):
+        if file.endswith('.mp3'):
+            file_path = os.path.join(folder_path, file)
+            print(f"Processing file: {file}")
+            create_combined_mel_spectrogram_image(file_path, output_folder)
 
 # Example usage
-input_folder = "mp3_folder"
-output_folder = "complex_spectrograms"
-mp3_to_complex_spectrogram(input_folder, output_folder)
+input_folder = "copy"
+output_folder = "copyspecto"
+process_audio_files(input_folder, output_folder)
