@@ -30,5 +30,5 @@ def process_folder(input_folder, grayscale_folder='grayscale', file_extension=".
             print(f"Processed {filename}: Grayscale spectrograms saved.")
 
 # Example usage
-input_folder = "copyspecto"
+input_folder = "copya"
 process_folder(input_folder)
