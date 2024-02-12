@@ -45,5 +45,5 @@ def process_folder(input_folder, output_folder):
             linear_spectrogram_to_audio(input_image_path, output_audio_path)
 
 input_folder = 'grayscale'
-output_folder = 'willtest1'
+output_folder = 'test1'
 process_folder(input_folder, output_folder)
