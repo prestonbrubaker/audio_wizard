@@ -17,7 +17,7 @@ def mp3_to_high_quality_spectrogram(input_folder, output_folder, sr=44100, n_fft
             
             # Ensure fixed duration
             target_length = 10 * sr
-            y = librosa.util.fix_length(y, target_length)
+            y = librosa.util.fix_length(data=y, size=target_length)
             
             # Generate high-resolution spectrogram
             S = np.abs(librosa.stft(y, n_fft=n_fft, hop_length=hop_length, window='hann'))
