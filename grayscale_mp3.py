@@ -22,7 +22,7 @@ def png_mel_spectrogram_to_audio(image_path, output_audio_path, sr=44100, n_fft=
     # Save the reconstructed audio
     librosa.output.write_wav(output_audio_path, y, sr)
 
-def process_folder(input_folder, output_folder, sr=44100, n_fft=2048, hop_length=512, n_iter=32):
+def process_folder(input_folder, output_folder, sr=44100, n_fft=2048, hop_length=512, n_mels=128, n_iter=32):
     # Ensure output folder exists
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
