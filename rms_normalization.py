@@ -1,46 +1,27 @@
 import os
 from pydub import AudioSegment
-import numpy as np
+from pydub.utils import mediainfo
 
-def normalize_audio(input_folder, output_folder, target_rms=-20):
-    os.makedirs(output_folder, exist_ok=True)
-    
-    for filename in os.listdir(input_folder):
-        if filename.endswith(".mp3"):
-            input_path = os.path.join(input_folder, filename)
-            output_path = os.path.join(output_folder, filename)
-            
-            try:
-                # Load audio
-                audio = AudioSegment.from_mp3(input_path)
-                
-                # Convert to numpy array
-                samples = np.array(audio.get_array_of_samples())
-                
-                # Calculate RMS
-                rms = np.sqrt(np.mean(samples**2))
-                
-                # Check if RMS is valid
-                if not np.isnan(rms) and rms != 0:
-                    # Calculate scaling factor
-                    scale_factor = 10**((target_rms - 20 * np.log10(rms)) / 20)
-                    
-                    # Apply normalization
-                    normalized_samples = (samples * scale_factor).astype(np.int16)
-                    
-                    # Convert back to AudioSegment
-                    normalized_audio = AudioSegment(normalized_samples.tobytes(), frame_rate=audio.frame_rate, sample_width=audio.sample_width, channels=1)
-                    
-                    # Export normalized audio
-                    normalized_audio.export(output_path, format="mp3")
-                    print(f"Normalized {filename} and saved to {output_path}")
-                else:
-                    print(f"Skipping {filename} due to invalid RMS.")
-            except Exception as e:
-                print(f"Error processing {filename}: {e}")
+def calculate_rms(mp3_file_path):
+    """Calculate RMS of an MP3 file."""
+    audio = AudioSegment.from_mp3(mp3_file_path)
+    return audio.rms
 
-# Example usage
-input_folder = "copy"
-output_folder = "normalizedampmp3"
-target_rms = -20  # Target RMS level in dB
-normalize_audio(input_folder, output_folder, target_rms)
+def process_folder(folder_path, output_file):
+    """Process all MP3 files in a folder, recording their RMS values to a text document."""
+    with open(output_file, 'w') as outfile:
+        for root, _, files in os.walk(folder_path):
+            for file in files:
+                if file.endswith(".mp3"):
+                    full_path = os.path.join(root, file)
+                    try:
+                        rms_value = calculate_rms(full_path)
+                        outfile.write(f"{file}: {rms_value}\n")
+                        print(f"Processed {file}")
+                    except Exception as e:
+                        print(f"Error processing {file}: {e}")
+
+# Usage
+folder_path = "copy"  # Replace with your folder path
+output_file = "rms_values.txt"
+process_folder(folder_path, output_file)
