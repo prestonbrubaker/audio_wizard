@@ -5,13 +5,13 @@ import soundfile as sf
 import os
 from scipy.ndimage import zoom
 
-def adjust_spectrogram_volume(S_dB, target_dB=-20):
+def adjust_spectrogram_volume(S_dB, target_dB=-5):
     """
     Adjusts the spectrogram volume by a target dB level.
     """
     return S_dB + target_dB  # Only adjust by the target dB level
 
-def linear_spectrogram_to_audio(input_image_path, output_audio_path, sr=44100, n_iter=32, hop_length=512, n_fft=2048):
+def linear_spectrogram_to_audio(input_image_path, output_audio_path, sr=44100, n_iter=64, hop_length=512, n_fft=2048):
     print(f"Inverting {input_image_path}...")
 
     img = plt.imread(input_image_path)
@@ -20,7 +20,7 @@ def linear_spectrogram_to_audio(input_image_path, output_audio_path, sr=44100, n
     img_db = img * 80 - 80  # Remove the normalization step
 
     # Adjust the volume of the spectrogram
-    img_db_adjusted = adjust_spectrogram_volume(img_db, target_dB=-20)
+    img_db_adjusted = adjust_spectrogram_volume(img_db, target_dB=-5)
     S_mag = librosa.db_to_amplitude(img_db_adjusted)
 
     desired_shape = (n_fft // 2 + 1, int(sr * 10 / hop_length))  # Calculate desired shape for 10-second audio
