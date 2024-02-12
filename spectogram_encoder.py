@@ -3,49 +3,38 @@ import librosa
 import librosa.display
 import matplotlib.pyplot as plt
 import numpy as np
+from pydub import AudioSegment
 
-def mp3_to_mel_spectrogram(mp3_path, save_path_grayscale, debug_log_path, sr=44100, n_fft=2048, hop_length=512, n_mels=128):
-    try:
-        y, sr = librosa.load(mp3_path, sr=sr, mono=True)  # Load the audio file
-        S = librosa.feature.melspectrogram(y=y, sr=sr, n_fft=n_fft, hop_length=hop_length, n_mels=n_mels)  # Compute the mel spectrogram
-        S_DB = librosa.power_to_db(S, ref=np.max)  # Convert to decibel scale
-        
-        # Check if S_DB has variation to avoid division by zero
-        if S_DB.max() > S_DB.min():
-            S_DB_normalized = 2 * ((S_DB - S_DB.min()) / (S_DB.max() - S_DB.min())) - 1  # Normalize the spectrogram to [-1, 1]
-        else:
-            # Log debugging information
-            with open(debug_log_path, "a") as log_file:
-                log_file.write(f"Normalization issue in file: {mp3_path}. S_DB.max() = {S_DB.max()}, S_DB.min() = {S_DB.min()}\n")
-            # Handle the no-variation scenario - Consider setting to zeros or another appropriate value
-            S_DB_normalized = np.zeros_like(S_DB)
-
-        # Create Grayscale figure
-        plt.figure(figsize=(10, 4))
-        librosa.display.specshow(S_DB_normalized, sr=sr, hop_length=hop_length, x_axis=None, y_axis=None, cmap='gray')
-        plt.axis('off')
-        plt.savefig(save_path_grayscale, bbox_inches='tight', pad_inches=0)
-        plt.close()
-
-    except Exception as e:
-        # Log any exception that occurs
-        with open(debug_log_path, "a") as log_file:
-            log_file.write(f"Error processing file: {mp3_path}. Error: {str(e)}\n")
-
-def process_folder(input_folder, grayscale_folder='copygray', debug_log_folder='debug_logs', file_extension=".mp3"):
-    os.makedirs(grayscale_folder, exist_ok=True)
-    os.makedirs(debug_log_folder, exist_ok=True)
-    debug_log_path = os.path.join(debug_log_folder, "debug_log.txt")
-    
-    # Process each file in the input folder
+def mp3_to_complex_spectrogram(input_folder, output_folder, sr=44100, n_fft=4096, hop_length=256):
     for filename in os.listdir(input_folder):
-        if filename.endswith(file_extension):
-            mp3_path = os.path.join(input_folder, filename)
-            image_name = filename.replace(file_extension, ".png")
-            save_path_grayscale = os.path.join(grayscale_folder, image_name)
-            mp3_to_mel_spectrogram(mp3_path, save_path_grayscale, debug_log_path)
-            print(f"Processed {filename}: Grayscale spectrograms saved.")
+        if filename.endswith(".mp3"):
+            path = os.path.join(input_folder, filename)
+            audio = AudioSegment.from_mp3(path).set_channels(1)
+            samples = np.array(audio.get_array_of_samples())
+            
+            # Ensure consistent sampling rate
+            y = librosa.resample(np.array(samples, dtype=float), orig_sr=audio.frame_rate, target_sr=sr)
+            
+            # Ensure fixed duration
+            target_length = 10 * sr
+            y = librosa.util.fix_length(data=y, size=target_length)
+            
+            # Generate complex spectrogram
+            S = librosa.stft(y, n_fft=n_fft, hop_length=hop_length, window='hann', center=False)
+            
+            # Plot the magnitude spectrogram
+            S_mag = np.abs(S)
+            plt.figure(figsize=(20, 8))  # Larger figure size
+            librosa.display.specshow(librosa.amplitude_to_db(S_mag, ref=np.max), sr=sr, hop_length=hop_length, x_axis='time', y_axis='linear')
+            plt.axis('off')
+            plt.tight_layout(pad=0)
+            
+            output_path = os.path.join(output_folder, os.path.splitext(filename)[0] + '.png')
+            plt.savefig(output_path, bbox_inches='tight', pad_inches=0, dpi=300)
+            plt.close()
+            print(f"Processed {filename}: Output Path={output_path}")
 
 # Example usage
-input_folder = "copya"
-process_folder(input_folder)
+input_folder = "mp3_folder"
+output_folder = "complex_spectrograms"
+mp3_to_complex_spectrogram(input_folder, output_folder)
