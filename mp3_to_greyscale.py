@@ -13,7 +13,7 @@ def mp3_to_linear_spectrogram(input_folder, output_folder, sr=44100, n_fft=2048,
             samples = np.array(audio.get_array_of_samples())
             
             # Convert samples to librosa format and ensure consistent sampling rate
-            y = librosa.resample(np.array(samples, dtype=float), audio.frame_rate, sr)
+            y = librosa.resample(y=np.array(samples, dtype=float), orig_sr=audio.frame_rate, target_sr=sr)
             
             # Trim or pad the audio samples to ensure a fixed duration (e.g., 10 seconds)
             target_length = 10 * sr  # 10 seconds at sr
@@ -39,5 +39,5 @@ def mp3_to_linear_spectrogram(input_folder, output_folder, sr=44100, n_fft=2048,
 
 # Example usage
 input_folder = 'data_freqmatch'
-output_folder = 'greyscales'
+output_folder = 'linear_spectrograms'
 mp3_to_linear_spectrogram(input_folder, output_folder)
