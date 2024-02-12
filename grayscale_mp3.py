@@ -1,51 +1,45 @@
-import os
 import numpy as np
-import librosa
 import matplotlib.pyplot as plt
-from scipy.io.wavfile import write
-from skimage.io import imread
+import librosa
+import soundfile as sf
+import os
+from scipy.ndimage import zoom
 
-def png_mel_spectrogram_to_audio(image_path, output_audio_path, sr=44100, n_fft=2048, hop_length=512, n_iter=32):
-    try:
-        # Load the Mel spectrogram image
-        print(f"Loading image: {image_path}")
-        S_DB_image = imread(image_path)
-        print(f"Image shape: {S_DB_image.shape}")
+def adjust_spectrogram_volume(S_dB, target_dB=-20):
+    """
+    Adjusts the spectrogram volume by a target dB level.
+    """
+    return S_dB + target_dB  # Only adjust by the target dB level
 
-        # Convert the Mel spectrogram from decibels back to power
-        S_power = librosa.db_to_power(S_DB_image)
-        print(f"Spectrogram power shape: {S_power.shape}")
+def linear_spectrogram_to_audio(input_image_path, output_audio_path, sr=44100, n_iter=32, hop_length=512, n_fft=2048):
+    print(f"Inverting {input_image_path}...")
 
-        # Inverse Mel transformation
-        S = librosa.feature.inverse.mel_to_stft(S_power, sr=sr, n_fft=n_fft)
-        print(f"Inverse Mel transformation shape: {S.shape}")
+    img = plt.imread(input_image_path)
+    if img.ndim == 3:
+        img = np.mean(img, axis=2)
+    img_db = img * 80 - 80  # Remove the normalization step
 
-        # Use the Griffin-Lim algorithm to estimate phase information
-        y = librosa.griffinlim(S, hop_length=hop_length, n_iter=n_iter)
+    # Adjust the volume of the spectrogram
+    img_db_adjusted = adjust_spectrogram_volume(img_db, target_dB=-20)
+    S_mag = librosa.db_to_amplitude(img_db_adjusted)
 
-        # Save the reconstructed audio
-        librosa.output.write_wav(output_audio_path, y, sr)
-        print(f"Audio saved to: {output_audio_path}")
+    desired_shape = (n_fft // 2 + 1, int(sr * 10 / hop_length))  # Calculate desired shape for 10-second audio
+    S_mag_adjusted = zoom(S_mag, (desired_shape[0] / S_mag.shape[0], desired_shape[1] / S_mag.shape[1]), order=1)
 
-    except Exception as e:
-        print(f"Error processing {image_path}: {e}")
+    y_reconstructed = librosa.griffinlim(S_mag_adjusted, n_iter=n_iter, hop_length=hop_length, n_fft=n_fft)
+    sf.write(output_audio_path, y_reconstructed, sr, duration=10)  # Set duration to 10 seconds
+    print(f"Saved audio to {output_audio_path}")
 
-def process_folder(input_folder, output_folder, sr=44100, n_fft=2048, hop_length=512, n_mels=128, n_iter=32):
-    # Ensure output folder exists
+def process_folder(input_folder, output_folder):
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
-
-    # Iterate through each file in the input folder
+    
     for filename in os.listdir(input_folder):
         if filename.endswith(".png"):
-            image_path = os.path.join(input_folder, filename)
+            input_image_path = os.path.join(input_folder, filename)
             output_audio_path = os.path.join(output_folder, os.path.splitext(filename)[0] + '.wav')
-            
-            print(f"Processing {filename}...")
-            png_mel_spectrogram_to_audio(image_path, output_audio_path, sr=sr, n_fft=n_fft, hop_length=hop_length, n_mels=n_mels, n_iter=n_iter)
-            print(f"Finished processing {filename}. Audio saved to {output_audio_path}")
+            linear_spectrogram_to_audio(input_image_path, output_audio_path)
 
-# Example usage
-input_folder = 'grayscale'  # Update this path
-output_folder = 'test1will'  # Update this path
+input_folder = 'greyscale'
+output_folder = 'willtest1'
 process_folder(input_folder, output_folder)
