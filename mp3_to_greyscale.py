@@ -47,6 +47,6 @@ def mp3_to_spectrogram(input_folder, output_folder):
             print(f"Processed {filename}: Duration={duration_seconds:.2f}s, Sample Rate={sample_rate}Hz, Channels=1, Output Path={output_path}")
 
 # Example usage
-input_folder = 'flat_data'
+input_folder = 'data_freqmatch'
 output_folder = 'greyscales'
 mp3_to_spectrogram(input_folder, output_folder)
