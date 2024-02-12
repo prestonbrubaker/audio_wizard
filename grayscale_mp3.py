@@ -40,6 +40,6 @@ def process_folder(input_folder, output_folder):
             output_audio_path = os.path.join(output_folder, os.path.splitext(filename)[0] + '.wav')
             linear_spectrogram_to_audio(input_image_path, output_audio_path)
 
-input_folder = 'greyscale'
+input_folder = 'grayscale'
 output_folder = 'willtest1'
 process_folder(input_folder, output_folder)
