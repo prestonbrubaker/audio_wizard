@@ -8,16 +8,19 @@ directory = 'copy'
 # Path for the output text document
 output_file = 'audio_diagnostics.txt'
 
-# Function to compute RMS of an audio segment
+# Function to compute RMS of an audio segment, adjusted for potential data issues
 def compute_rms(audio_segment):
-    # Extract raw audio data as numpy array
-    samples = np.array(audio_segment.get_array_of_samples())
+    samples = np.array(audio_segment.get_array_of_samples(), dtype=np.float64)  # Ensure samples are float64
     if audio_segment.channels == 2:  # Stereo
         left = samples[::2]
         right = samples[1::2]
-        rms_value = np.sqrt(np.mean(np.square(left), dtype=np.float64) + np.mean(np.square(right), dtype=np.float64)) / 2
+        # Ensure no invalid values; replace NaNs with 0 for calculation
+        left = np.nan_to_num(left, nan=0.0)
+        right = np.nan_to_num(right, nan=0.0)
+        rms_value = np.sqrt(np.mean(np.square(left)) + np.mean(np.square(right))) / 2
     else:  # Mono
-        rms_value = np.sqrt(np.mean(np.square(samples), dtype=np.float64))
+        samples = np.nan_to_num(samples, nan=0.0)  # Replace NaNs with 0
+        rms_value = np.sqrt(np.mean(np.square(samples)))
     return rms_value
 
 # Open or create the output file
