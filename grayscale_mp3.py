@@ -5,16 +5,13 @@ import matplotlib.pyplot as plt
 from scipy.io.wavfile import write
 from skimage.io import imread
 
-def png_mel_spectrogram_to_audio(image_path, output_audio_path, sr=44100, n_fft=2048, hop_length=512, n_mels=128, n_iter=32):
+def png_mel_spectrogram_to_audio(image_path, output_audio_path, sr=44100, n_fft=2048, hop_length=512, n_iter=32):
     # Load the Mel spectrogram image
     S_DB_image = imread(image_path)
-    S_DB_normalized = S_DB_image.astype(np.float32) / 255.0  # Convert pixel values to [0, 1]
-
-    # Reverse the normalization to [-1, 1]
-    S_DB_normalized = (S_DB_normalized * 2) - 1  # Convert [0, 1] to [-1, 1]
+    S_DB_normalized = S_DB_image.astype(np.float32)  # No normalization needed
 
     # Convert the Mel spectrogram from decibels back to power
-    S_power = librosa.db_to_power(S_DB_normalized)  # This step might need adjustment
+    S_power = librosa.db_to_power(S_DB_normalized)
 
     # Inverse Mel transformation
     S = librosa.feature.inverse.mel_to_stft(S_power, sr=sr, n_fft=n_fft)
