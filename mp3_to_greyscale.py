@@ -39,5 +39,5 @@ def mp3_to_linear_spectrogram(input_folder, output_folder, sr=44100, n_fft=2048,
 
 # Example usage
 input_folder = 'data_freqmatch'
-output_folder = 'linear_spectrograms'
+output_folder = 'greyscales'
 mp3_to_linear_spectrogram(input_folder, output_folder)
