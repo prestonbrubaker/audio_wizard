@@ -29,7 +29,7 @@ def linear_spectrogram_to_audio(input_image_path, output_audio_path, sr=44100, n
     y_reconstructed = librosa.griffinlim(S_mag_adjusted, n_iter=n_iter, hop_length=hop_length, n_fft=n_fft)
 
     # Adjust the length of the signal to achieve a duration of 10 seconds
-    y_reconstructed = librosa.util.fix_length(y_reconstructed, int(sr * 10))
+    y_reconstructed = y_reconstructed[:sr * 10]
 
     sf.write(output_audio_path, y_reconstructed, sr)  # Write the signal to the output file
     print(f"Saved audio to {output_audio_path}")
